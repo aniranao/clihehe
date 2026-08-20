@@ -1,0 +1,47 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "hidden": true
+    },
+    {
+      "name": "base-test",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CLIHEHE_BUILD_TESTS": "ON",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+      }
+    },
+    {
+      "name": "test-cxx-23-based",
+      "inherits": "base-test",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "23"
+      }
+    },
+    {
+      "name": "test-cxx-20-based",
+      "inherits": "base-test",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20"
+      }
+    },
+    {
+      "name": "test-cxx-20-fmt-all",
+      "inherits": "test-cxx-20-based",
+      "cacheVariables": {
+        "CLIHEHE_TEST_FMT": "ON"
+      }
+    }
+  ]
+}
