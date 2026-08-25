@@ -1,10 +1,10 @@
 //============================================================================//
-// clihehe/clihehe.h
+// clihehe/parser_context.h
 //
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// Umbrella header
+/// Type parser
 ///
 //============================================================================//
 // Copyright (c) 2026 AniraNao. All Rights Reserved.
@@ -12,9 +12,18 @@
 // SPDX-License-Identifier: BSD-2-Clause
 //============================================================================//
 
-#ifndef NAO_CLIHEHE_CLIHEHE_H
-#define NAO_CLIHEHE_CLIHEHE_H
+#ifndef NAO_CLIHEHE_PARSERCONTEXT_H
+#define NAO_CLIHEHE_PARSERCONTEXT_H
 
-#include "clihehe/cliparser_base.h"
+#include <span>
+#include <string_view>
+
+namespace clihehe {
+struct ParserContext {
+  std::string_view programName;
+  std::span<std::string_view const> Args;
+  size_t I;
+};
+} // namespace clihehe
 
 #endif
