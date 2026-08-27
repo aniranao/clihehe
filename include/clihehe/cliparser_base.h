@@ -16,18 +16,23 @@
 #define NAO_CLIHEHE_CLIPARSERBASE_H
 
 #include "clihehe/error.h"
+#include "clihehe/option.h"
 #include <string_view>
 
 namespace clihehe {
-class OptionBase;
 class Subcommand;
 class OptionCategory;
 
 class CLIparserbase {
 public:
-  virtual ~CLIparserbase() noexcept = default;
+  ~CLIparserbase() noexcept = default;
 
-  virtual CLIError parse_option(int argc, char const *const *argv) = 0;
+  CLIError parse_option(int argc, char const *const *argv);
+
+  template <typename... T, typename... Ys>
+  NAO_CLIHH_INLINE Opt<T...> get_option(Ys &&...Args) {
+    return {std::forward<Ys>(Args)...};
+  }
 
   std::string_view Name;
   std::string_view Desc;

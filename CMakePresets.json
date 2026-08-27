@@ -42,6 +42,13 @@
       "cacheVariables": {
         "CLIHEHE_TEST_FMT": "ON"
       }
+    },
+    {
+      "name": "test-cxx-23-fmt-all",
+      "inherits": "test-cxx-23-based",
+      "cacheVariables": {
+        "CLIHEHE_TEST_FMT": "ON"
+      }
     }
   ]
 }
