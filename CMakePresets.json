@@ -10,7 +10,10 @@
       "name": "base",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
-      "hidden": true
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+      }
     },
     {
       "name": "base-test",
