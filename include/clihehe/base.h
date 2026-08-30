@@ -15,197 +15,185 @@
 #ifndef NAO_CLIHEHE_BASE_H
 #define NAO_CLIHEHE_BASE_H
 
-#include "clihehe/extras/ranges.h"
-#include <cassert>
-#include <concepts>
 #include <cstdint>
 #include <string_view>
-#include <vector>
+#include <type_traits>
 
 namespace clihehe {
-enum Occur : uint8_t {
+enum class OccurrencesFlag : uint8_t {
   Optional,
   ZeroOrMore,
-  SRequired,
-  SOneOrMore,
-  SConsumeAfter
-};
-enum ValueExpected : uint8_t { VOptional = 1, VRequired = 2, VDisallowed = 3 };
-enum Formatting : uint8_t { NormFor = 0, Positional = 1, CompilerLike = 2 };
-enum Misc : uint8_t { Norm = 0 << 1, EatArgs = 1 << 1, SepComma = 2 << 1 };
-enum ShortMisc : uint8_t { SNorm = 0b1, SCombining = 1 << 1 };
-
-template <typename Sub>
-  requires(!std::same_as<Sub, void> || std::is_reference_v<Sub> ||
-           std::is_pointer_v<Sub>)
-class CLIParserSubStorage {
-private:
-  std::vector<Sub *> Subs;
-
-protected:
-  CLIParserSubStorage() = default;
-
-public:
-  ~CLIParserSubStorage() = default;
-
-  void register_subcommand(Sub *S) {
-    assert(S && "Invalid address subcommand");
-    assert(!nao::ranges_contains(Subs, S) &&
-           "this subcommand already registered");
-    Subs.push_back(S);
-  }
+  Required,
+  OneOrMore,
+  ConsumeAfter
 };
 
-template <typename Opt>
-  requires(!std::same_as<Opt, void> || std::is_reference_v<Opt> ||
-           std::is_pointer_v<Opt>)
+enum class ValueExpected : uint8_t { Optional, Required, Disallowed };
+enum class TypeOption : uint8_t { Normal, Positional, Prefix };
+enum class ValueMiscFlag : uint8_t {
+  NONE = 0x0,
 
-class CLIParserOptStorage {
-private:
-  std::vector<Opt *> Opts;
+  CommaSeparated = 1 << 0, // for vector
+  ConsumeFlag = 1 << 1,
+  ConsumeUnkownFlag = 1 << 2,
 
-protected:
-  CLIParserOptStorage() = default;
-
-public:
-  ~CLIParserOptStorage() = default;
-
-  void register_opt(Opt *S) {
-    assert(S && "Invalid address option");
-    assert(!nao::ranges_contains(Opts, S) && "this option already registered");
-    Opts.push_back(S);
-  }
+  Default = 0b111
 };
 
-template <typename Cate>
-  requires(!std::same_as<Cate, void> || std::is_reference_v<Cate> ||
-           std::is_pointer_v<Cate>)
-class CLIParserCateStorage {
-private:
-  std::vector<Cate *> Opts;
+constexpr ValueMiscFlag operator|(ValueMiscFlag LHS, ValueMiscFlag RHS) {
+  using T = std::underlying_type_t<ValueMiscFlag>;
+  return static_cast<ValueMiscFlag>(static_cast<T>(LHS) | static_cast<T>(RHS));
+}
 
-protected:
-  CLIParserCateStorage() = default;
+constexpr ValueMiscFlag &operator|=(ValueMiscFlag &LHS, ValueMiscFlag RHS) {
+  using T = std::underlying_type_t<ValueMiscFlag>;
+  return LHS = LHS | RHS;
+}
 
-public:
-  ~CLIParserCateStorage() = default;
+constexpr ValueMiscFlag operator&(ValueMiscFlag LHS, ValueMiscFlag RHS) {
+  using T = std::underlying_type_t<ValueMiscFlag>;
+  return static_cast<ValueMiscFlag>(static_cast<T>(LHS) & static_cast<T>(RHS));
+}
 
-  void register_cate(Cate *S) {
-    assert(S && "Invalid address category");
-    assert(!nao::ranges_contains(Opts, S) &&
-           "this category already registered");
-    Opts.push_back(S);
-  }
+constexpr ValueMiscFlag &operator&=(ValueMiscFlag &LHS, ValueMiscFlag RHS) {
+  using T = std::underlying_type_t<ValueMiscFlag>;
+  return LHS = LHS & RHS;
+}
+
+constexpr ValueMiscFlag operator~(ValueMiscFlag RHS) {
+  using T = std::underlying_type_t<ValueMiscFlag>;
+  return static_cast<ValueMiscFlag>(~static_cast<T>(RHS));
+}
+
+enum class MiscFlag : uint8_t {
+  NONE = 0x0,
+  ShortGrouping = 1 << 0,
+  Default = 0b1
 };
 
-template <typename OptionType, typename OptCateType, typename Sub>
-class CLIParser : public CLIParserOptStorage<OptionType>,
-                  public CLIParserCateStorage<OptCateType>,
-                  public CLIParserSubStorage<Sub> {
-  using sub_stor = CLIParserSubStorage<Sub>;
-  using opt_stor = CLIParserOptStorage<Sub>;
-  using cate_stor = CLIParserCateStorage<Sub>;
+constexpr MiscFlag operator|(MiscFlag LHS, MiscFlag RHS) {
+  using T = std::underlying_type_t<MiscFlag>;
+  return static_cast<MiscFlag>(static_cast<T>(LHS) | static_cast<T>(RHS));
+}
 
-private:
-  std::vector<OptionType *> Opts;
-  std::vector<OptCateType *> Cates;
+constexpr MiscFlag &operator|=(MiscFlag &LHS, MiscFlag RHS) {
+  using T = std::underlying_type_t<MiscFlag>;
+  return LHS = LHS | RHS;
+}
 
-public:
-  CLIParser() = default;
-  ~CLIParser() = default;
-};
+constexpr MiscFlag operator&(MiscFlag LHS, MiscFlag RHS) {
+  using T = std::underlying_type_t<MiscFlag>;
+  return static_cast<MiscFlag>(static_cast<T>(LHS) & static_cast<T>(RHS));
+}
+
+constexpr MiscFlag &operator&=(MiscFlag &LHS, MiscFlag RHS) {
+  using T = std::underlying_type_t<MiscFlag>;
+  return LHS = LHS & RHS;
+}
+
+constexpr MiscFlag operator~(MiscFlag RHS) {
+  using T = std::underlying_type_t<MiscFlag>;
+  return static_cast<MiscFlag>(~static_cast<T>(RHS));
+}
 
 class OptionBase {
-private:
-  uint8_t OccurValue : 3;
-  uint8_t ExpectedValue : 2;
-  uint8_t FormatValue : 2;
-  uint8_t MiscValue : 2;
-  uint8_t SMiscValue : 1;
-  bool Show : 1;
-
 protected:
-  OptionBase()
-      : OccurValue(Optional), ExpectedValue(VOptional), FormatValue(NormFor),
-        MiscValue(SNorm), SMiscValue(SNorm), Show(true) {}
-  virtual ~OptionBase() = default;
+  uint16_t Occurences;
+  OccurrencesFlag OccurF : 3;
+  ValueExpected ExpectedF : 2;
+
+  OptionBase(OccurrencesFlag Occur, ValueExpected Ex)
+      : Occurences(0), OccurF(Occur), ExpectedF(Ex) {}
 
 public:
-  std::string_view Long;
-  char8_t Short;
+  [[nodiscard]] virtual bool isHidden() const { return false; }
+  [[nodiscard]] virtual TypeOption getTypeOption() const {
+    return TypeOption::Normal;
+  }
+  [[nodiscard]] OccurrencesFlag getOccurences() const { return OccurF; }
+  [[nodiscard]] ValueExpected getExpected() const { return ExpectedF; }
 
-  [[nodiscard]] bool hasLongOpt() const { return !Long.empty(); }
-  [[nodiscard]] bool hasShortOpt() const { return Short != 0x00; }
+  [[nodiscard]] virtual std::string_view getLongOpt() const { return ""; }
+  [[nodiscard]] virtual char8_t getShortOpt() const { return '\0'; }
 
-  void changeOccur(Occur O) { this->OccurValue = O; }
-  void changeExpected(ValueExpected Ex) { ExpectedValue = Ex; }
-  void changeFormat(Formatting For) { this->FormatValue = For; }
-  void addShortMisc(ShortMisc S) { this->SMiscValue |= S; }
-  void addMisc(Misc S) { this->MiscValue |= S; }
-  void hideThisOption() { Show = true; }
+  [[nodiscard]] virtual std::string_view getDesc() const { return ""; }
+  [[nodiscard]] virtual std::string_view getValueDesc() const { return ""; }
+
+  [[nodiscard]] virtual MiscFlag getMisc() const { return MiscFlag::NONE; }
 };
 
-class Sub {
+template <typename TParser> class OptionBaseBuild : public OptionBase {
+protected:
+  TParser TypeParser;
+  std::string_view Desc;
+  std::string_view ValueDesc;
+
 public:
-  std::string_view const Name;
-  std::string_view const Desc;
+  using OptionBase::OptionBase;
 
-  std::vector<OptionBase *> Options;
-  std::vector<OptionBase *> Position;
+  [[nodiscard]] TypeOption getTypeOption() const override {
+    return TypeOption::Normal;
+  }
 
-  Sub(std::string_view Name, std::string_view Desc) : Name(Name), Desc(Desc) {}
-  Sub(CLIParserSubStorage<Sub> &P, std::string_view Name, std::string_view Desc)
-      : Sub(Name, Desc) {
-    P.register_subcommand(this);
+  [[nodiscard]] std::string_view getDesc() const override { return Desc; }
+  [[nodiscard]] std::string_view getValueDesc() const override {
+    return ValueDesc;
   }
 };
 
-class OptionCate {
-public:
-  std::string_view const Name;
-  std::string_view const Desc;
-
-  OptionCate(std::string_view Name, std::string_view Desc)
-      : Name(Name), Desc(Desc) {}
-  OptionCate(CLIParserCateStorage<OptionCate> &P, std::string_view N,
-             std::string_view D)
-      : OptionCate(N, D) {
-    P.register_cate(this);
-  }
-};
-
-template <typename Applier>
-concept ValidOptionApplier =
-    requires(Applier &&A, OptionBase *B) { A.apply(B); };
-
-template <class ParserT>
-concept ValidParserForOpt = requires(ParserT A) { std::is_class_v<ParserT>; };
-
-template <typename T> class opt : public OptionBase {
+template <typename T, typename TParser>
+class arg : public OptionBaseBuild<TParser> {
 private:
-  T Val;
+  T Value;
+  std::string_view LongOpt;
+  char8_t ShortOpt;
+  MiscFlag Misc = MiscFlag::Default;
+
+  bool Hidden : 1;
 
 public:
-  template <typename... Appliers>
-    requires(ValidOptionApplier<Appliers> && ...)
-  explicit opt(Appliers &&...Args) {
-    (std::forward<Appliers>(Args).apply(this), ...);
+  template <typename... Ts> explicit arg(Ts &&...Args);
+
+  void removeMisc(MiscFlag F) { Misc &= ~F; }
+  void addMisc(MiscFlag F) { Misc |= F; }
+
+  [[nodiscard]] bool isHidden() const override { return Hidden; }
+  [[nodiscard]] TypeOption getTypeOption() const override {
+    return TypeOption::Normal;
   }
-  ~opt() override = default;
 
-  T *operator->() { return &Val; }
-  T *operator->() const { return &Val; }
+  [[nodiscard]] std::string_view getLongOpt() const override { return LongOpt; }
+  [[nodiscard]] char8_t getShortOpt() const override { return ShortOpt; }
+  [[nodiscard]] MiscFlag getMisc() const { return Misc; }
 
-  operator T() const { return Val; }
-  operator T() { return Val; }
+  operator T() { return Value; }
+  T operator->() { return Value; }
+
+  operator T() const { return Value; }
+  T operator->() const { return Value; }
 };
 
-template <typename T>
-  requires std::is_class_v<T>
-class opt<T> : public T, public OptionBase {
+template <typename T, typename TParser>
+class positional : public OptionBaseBuild<TParser> {
+private:
+  T Value;
+
+  bool Hidden : 1;
+
 public:
-};
+  template <typename... Ts> explicit positional(Ts &&...Args);
 
+  [[nodiscard]] bool isHidden() const override { return Hidden; }
+  [[nodiscard]] TypeOption getTypeOption() const override {
+    return TypeOption::Positional;
+  }
+
+  operator T() { return Value; }
+  T operator->() { return Value; }
+
+  operator T() const { return Value; }
+  T operator->() const { return Value; }
+};
 } // namespace clihehe
 
 #endif
