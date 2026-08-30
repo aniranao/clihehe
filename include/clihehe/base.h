@@ -141,6 +141,52 @@ public:
   }
 };
 
+template <typename T> struct Applier {
+  template <typename O> static void apply(O *Opt, T &&V) { V.apply(Opt); }
+};
+
+template <size_t N> struct Applier<char[N]> {
+  template <typename O> static void apply(O *Opt, std::string_view Str) {
+    Opt->setLongOpt(Str);
+  }
+};
+
+template <> struct Applier<char> {
+  template <typename O> static void apply(O *Opt, char S) {
+    Opt->setShortOpt(static_cast<char8_t>(S));
+  }
+};
+
+template <> struct Applier<char8_t> {
+  template <typename O> static void apply(O *Opt, char8_t S) {
+    Opt->setShortOpt(S);
+  }
+};
+
+template <> struct Applier<OccurrencesFlag> {
+  template <typename O> static void apply(O *Opt, OccurrencesFlag Occ) {
+    Opt->getOccurencesFlag(Occ);
+  }
+};
+
+template <> struct Applier<ValueExpected> {
+  template <typename O> static void apply(O *Opt, ValueExpected V) {
+    Opt->setExpected(V);
+  }
+};
+
+template <> struct Applier<ValueMiscFlag> {
+  template <typename O> static void apply(O *Opt, ValueMiscFlag V) {
+    Opt->addValueMiscFlag(V);
+  }
+};
+
+template <> struct Applier<MiscFlag> {
+  template <typename O> static void apply(O *Opt, MiscFlag V) {
+    Opt->addMiscFlag(V);
+  }
+};
+
 template <typename T, typename TParser>
 class arg : public OptionBaseBuild<TParser> {
 private:
@@ -152,7 +198,9 @@ private:
   bool Hidden : 1;
 
 public:
-  template <typename... Ts> explicit arg(Ts &&...Args);
+  template <typename... Ts> explicit arg(Ts &&...Args) {
+    (Applier<Ts>::apply(this, std::forward<Ts>(Args)), ...);
+  }
 
   void removeMisc(MiscFlag F) { Misc &= ~F; }
   void addMisc(MiscFlag F) { Misc |= F; }
@@ -181,7 +229,9 @@ private:
   bool Hidden : 1;
 
 public:
-  template <typename... Ts> explicit positional(Ts &&...Args);
+  template <typename... Ts> explicit positional(Ts &&...Args) {
+    (Applier<Ts>::apply(this, std::forward<Ts>(Args)), ...);
+  }
 
   [[nodiscard]] bool isHidden() const override { return Hidden; }
   [[nodiscard]] TypeOption getTypeOption() const override {

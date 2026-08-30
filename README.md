@@ -26,9 +26,9 @@ int main(int argc, char **argv) {
   ch::CLIParser Pa("name_program", "desc");
   ch::positional<std::string> Str(Pa, ch::st::desc("desc"),
                                       ch::st::value_desc("STR"));
-  ch::arg<bool> Color(Pa, 'C' /* short arg */, ch::st::long("color") /* long arg */,
+  ch::arg<bool> Color(Pa, 'C' /* short arg */, ch::st::long_opt("color") /* long arg */,
                       ch::st::desc("DESC"),
-                      ch::st::default(support_color());
+                      ch::st::default_val(support_color());
   ch::arg<uint32_t> weo(Pa, "weo" /* long */,
                               ch::st::desc("hehe"),
                               ch::st::default_val(5));
