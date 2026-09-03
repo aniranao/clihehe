@@ -15,4 +15,10 @@
 #ifndef NAO_CLIHEHE_CLIHEHE_H
 #define NAO_CLIHEHE_CLIHEHE_H
 
+#include "clihehe/extras/string_view.h"
+
+#include "clihehe/base.h"
+#include "clihehe/macros.h"
+#include "clihehe/options.h"
+
 #endif

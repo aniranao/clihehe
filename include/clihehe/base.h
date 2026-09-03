@@ -37,7 +37,7 @@ enum class ValueMiscFlag : uint8_t {
   ConsumeFlag = 1 << 1,
   ConsumeUnkownFlag = 1 << 2,
 
-  Default = 0b111
+  Default = (CommaSeparated | ConsumeFlag | ConsumeUnkownFlag)
 };
 
 constexpr ValueMiscFlag operator|(ValueMiscFlag LHS, ValueMiscFlag RHS) {
@@ -68,7 +68,7 @@ constexpr ValueMiscFlag operator~(ValueMiscFlag RHS) {
 enum class MiscFlag : uint8_t {
   NONE = 0x0,
   ShortGrouping = 1 << 0,
-  Default = 0b1
+  Default = (ShortGrouping)
 };
 
 constexpr MiscFlag operator|(MiscFlag LHS, MiscFlag RHS) {
@@ -98,7 +98,7 @@ constexpr MiscFlag operator~(MiscFlag RHS) {
 
 class OptionBase {
 protected:
-  uint16_t Occurences;
+  uint16_t Occurences = 0;
   OccurrencesFlag OccurF : 3;
   ValueExpected ExpectedF : 2;
 
@@ -222,18 +222,45 @@ public:
 };
 
 template <typename T, typename TParser>
+  requires std::is_class_v<T>
+class arg<T, TParser> : public T, public OptionBaseBuild<TParser> {
+private:
+  T Value;
+  std::string_view LongOpt;
+  char8_t ShortOpt;
+  MiscFlag Misc = MiscFlag::Default;
+
+  bool Hidden : 1;
+
+public:
+  template <typename... Ts> explicit arg(Ts &&...Args) {
+    (Applier<Ts>::apply(this, std::forward<Ts>(Args)), ...);
+  }
+
+  void removeMisc(MiscFlag F) { Misc &= ~F; }
+  void addMisc(MiscFlag F) { Misc |= F; }
+
+  [[nodiscard]] bool isHidden() const override { return Hidden; }
+  [[nodiscard]] TypeOption getTypeOption() const override {
+    return TypeOption::Normal;
+  }
+
+  [[nodiscard]] std::string_view getLongOpt() const override { return LongOpt; }
+  [[nodiscard]] char8_t getShortOpt() const override { return ShortOpt; }
+  [[nodiscard]] MiscFlag getMisc() const { return Misc; }
+};
+
+template <typename T, typename TParser>
 class positional : public OptionBaseBuild<TParser> {
 private:
   T Value;
-
-  bool Hidden : 1;
 
 public:
   template <typename... Ts> explicit positional(Ts &&...Args) {
     (Applier<Ts>::apply(this, std::forward<Ts>(Args)), ...);
   }
 
-  [[nodiscard]] bool isHidden() const override { return Hidden; }
+  [[nodiscard]] bool isHidden() const override { return false; }
   [[nodiscard]] TypeOption getTypeOption() const override {
     return TypeOption::Positional;
   }
@@ -243,6 +270,23 @@ public:
 
   operator T() const { return Value; }
   T operator->() const { return Value; }
+};
+
+template <typename T, typename TParser>
+  requires std::is_class_v<T>
+class positional<T, TParser> : public T, public OptionBaseBuild<TParser> {
+private:
+  T Value;
+
+public:
+  template <typename... Ts> explicit positional(Ts &&...Args) {
+    (Applier<Ts>::apply(this, std::forward<Ts>(Args)), ...);
+  }
+
+  [[nodiscard]] bool isHidden() const override { return false; }
+  [[nodiscard]] TypeOption getTypeOption() const override {
+    return TypeOption::Positional;
+  }
 };
 } // namespace clihehe
 
