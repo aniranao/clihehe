@@ -25,12 +25,6 @@
 #  error "nao/clihehe: wrong C++ version"
 #endif
 
-#ifndef __has_include
-#  define NAO_CLIHH_HAS_INCLUDE(x) 0
-#else
-#  define NAO_CLIHH_HAS_INCLUDE(x) __has_include(x)
-#endif
-
 #ifndef __has_attribute
 #  define NAO_CLIHH_HAS_ATTRIBUTE(x) 0
 #else
@@ -68,7 +62,7 @@
 //===----------------------------------------------------===//
 
 #if !defined(NAO_CLIHH_FMT_FORMAT) && !defined(NAO_CLIHH_STD_FORMAT)
-#  if NAO_CLIHH_HAS_INCLUDE("fmt/base.h")
+#  ifdef FMT_VERSION
 #    define NAO_CLIHH_FMT_FORMAT
 #  else
 #    define NAO_CLIHH_STD_FORMAT
@@ -77,7 +71,7 @@
 
 #if !defined(NAO_CLIHH_FMT_PRINT) && !defined(NAO_CLIHH_STD_PRINT) &&          \
     !defined(NAO_CLIHH_STD_OSTREAM)
-#  if NAO_CLIHH_HAS_INCLUDE("fmt/base.h")
+#  ifdef FMT_VERSION
 #    define NAO_CLIHH_FMT_PRINT
 #  elif defined(NAO_CLIHH_CXX_23) && defined(__cpp_lib_print)
 #    define NAO_CLIHH_STD_PRINT

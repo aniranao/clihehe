@@ -8,9 +8,17 @@
 
 #include "clihehe/extras/string_view.h"
 #include "gtest/gtest.h"
+#include <exception>
 #include <format>
 #include <iterator>
+#include <string>
 #include <type_traits>
+
+#ifdef NAO_CLIHH_OSTREAM
+#  include <iostream>
+#  include <sstream>
+#endif
+
 using namespace clihehe::nao;
 using std::ranges::equal;
 
@@ -1281,7 +1289,7 @@ TEST(StringRefTest, STLFormatting) {
   EXPECT_EQ(std::format("{:>10.5}", sv), "     Hello");
 
   StringRef utf8_sv("雀　すずめ🇨🇦㊗️");
-  EXPECT_EQ(fmt::format("{}", utf8_sv), "雀　すずめ🇨🇦㊗️");
+  EXPECT_EQ(std::format("{}", utf8_sv), "雀　すずめ🇨🇦㊗️");
 
   StringRef sv1("Apple");
   StringRef sv2("Banana");
@@ -1345,6 +1353,27 @@ TEST(StringRefTest, FMTFormatting) {
   EXPECT_EQ(fmt::format("{:>{}}", sv, width), "     Dynamic");
   EXPECT_EQ(fmt::format("{:.{}}", sv, precision), "Dyna");
   EXPECT_EQ(fmt::format("{:>{}.{}}", sv, width, precision), "        Dyna");
+}
+#endif
+
+#ifdef NAO_CLIHH_OSTREAM
+TEST(StringRefTest, STLOstream) {
+  try {
+    StringRef sv("");
+    std::string Buff;
+    std::stringstream OS(Buff);
+
+    OS << sv;
+    EXPECT_EQ(OS.str(), "");
+    OS.clear();
+
+    sv = "雀　すずめ";
+    OS << sv;
+    EXPECT_EQ(OS.str(), "雀　すずめ");
+    OS.clear();
+  } catch (std::exception const &E) {
+    ASSERT_TRUE(false) << "What exception: " << E.what();
+  }
 }
 #endif
 

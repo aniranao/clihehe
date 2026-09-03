@@ -15,6 +15,7 @@
 #ifndef NAO_CLIHEHE_BASE_H
 #define NAO_CLIHEHE_BASE_H
 
+#include "macros.h"
 #include <cstdint>
 #include <string_view>
 #include <type_traits>

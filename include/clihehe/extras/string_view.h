@@ -41,8 +41,12 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef NAO_CLIHH_FMT_FORMAT
+#if defined(NAO_CLIHH_FMT_FORMAT) || defined(NAO_CLIHH_FMT_PRINT)
 #  include "fmt/format.h"
+#endif
+
+#ifdef NAO_CLIHH_OSTREAM
+#  include <ostream>
 #endif
 
 // NOLINTBEGIN(readability-container-contains,readability-braces-around-statements,readability-implicit-bool-conversion,modernize-avoid-c-style-cast)
@@ -602,6 +606,13 @@ public:
   template <size_t N>
   constexpr StringLiteral(const char (&Chars)[N]) : StringRef(Chars, N - 1) {}
 };
+
+#ifdef NAO_CLIHH_OSTREAM
+inline ::std::ostream &operator<<(::std::ostream &OS, const StringRef &Ref) {
+  OS << std::string_view{Ref};
+  return OS;
+}
+#endif
 } // namespace clihehe::nao
 // NOLINTEND(readability-container-contains,readability-braces-around-statements,readability-implicit-bool-conversion,modernize-avoid-c-style-cast)
 
