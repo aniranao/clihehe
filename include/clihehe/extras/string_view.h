@@ -16,9 +16,8 @@
 /// This is llvm::StringRef
 ///
 //============================================================================//
-// Copyright (c) 2026 AniraNao. All Rights Reserved.
-//
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-Exception
+//
 //============================================================================//
 
 #ifndef NAO_CLIHEHE_EXTRAS_STRINGVIEW_H
