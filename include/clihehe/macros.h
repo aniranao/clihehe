@@ -25,6 +25,12 @@
 #  error "nao/clihehe: wrong C++ version"
 #endif
 
+#ifdef __has_builtin
+#  define NAO_CLIHH_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#  define NAO_CLIHH_HAS_BUILTIN(x) 0
+#endif
+
 #ifndef __has_attribute
 #  define NAO_CLIHH_HAS_ATTRIBUTE(x) 0
 #else

@@ -23,6 +23,7 @@
 #ifndef NAO_CLIHEHE_EXTRAS_STRINGVIEW_H
 #define NAO_CLIHEHE_EXTRAS_STRINGVIEW_H
 
+#include "clihehe/extras/rapidhash.h"
 #include "clihehe/macros.h"
 #include <algorithm>
 #include <bitset>
@@ -601,6 +602,10 @@ inline std::string &operator+=(std::string &buffer, StringRef string) {
   return buffer.append(string.data(), string.size());
 }
 
+NAO_CLIHH_ALWAYS_INLINE size_t hash_value(StringRef T) {
+  return nao_rapidhashMicro(static_cast<const void *>(T.data()), T.size());
+}
+
 class StringLiteral : public StringRef {
 public:
   template <size_t N>
@@ -617,6 +622,12 @@ inline ::std::ostream &operator<<(::std::ostream &OS, const StringRef &Ref) {
 // NOLINTEND(readability-container-contains,readability-braces-around-statements,readability-implicit-bool-conversion,modernize-avoid-c-style-cast)
 
 namespace std {
+template <> struct hash<clihehe::nao::StringRef> {
+  size_t operator()(const clihehe::nao::StringRef &Val) const noexcept {
+    return clihehe::nao::hash_value(Val);
+  }
+};
+
 template <>
 struct formatter<clihehe::nao::StringRef> : std::formatter<std::string_view> {};
 } // namespace std

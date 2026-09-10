@@ -84,6 +84,10 @@ Compiler with C++20 support, and STL at least supported `std::format` and `std::
 Also, `clihehe` supported with `fmtlib` or C++23.
 Just depend on you!
 
+Depend on directly:
+
+- [rapidhash](https://github.com/Nicoshev/rapidhash) - in `include/clihehe/extras/ranges.h`, MIT license. Thanks to Nicolas De Carli and Wang Yi!
+
 # Acknowledge
 
 API inspired by: [LLVM Support CommandLine](https://llvm.org/docs/CommandLine.html)

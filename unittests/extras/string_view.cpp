@@ -8,7 +8,6 @@
 
 #include "clihehe/extras/string_view.h"
 #include "gtest/gtest.h"
-#include <exception>
 #include <format>
 #include <iterator>
 #include <string>
@@ -1358,22 +1357,18 @@ TEST(StringRefTest, FMTFormatting) {
 
 #ifdef NAO_CLIHH_OSTREAM
 TEST(StringRefTest, STLOstream) {
-  try {
-    StringRef sv("");
-    std::string Buff;
-    std::stringstream OS(Buff);
+  StringRef sv("");
+  std::string Buff;
+  std::stringstream OS(Buff);
 
-    OS << sv;
-    EXPECT_EQ(OS.str(), "");
-    OS.clear();
+  OS << sv;
+  EXPECT_EQ(OS.str(), "");
+  OS.clear();
 
-    sv = "雀　すずめ";
-    OS << sv;
-    EXPECT_EQ(OS.str(), "雀　すずめ");
-    OS.clear();
-  } catch (std::exception const &E) {
-    ASSERT_TRUE(false) << "What exception: " << E.what();
-  }
+  sv = "雀　すずめ";
+  OS << sv;
+  EXPECT_EQ(OS.str(), "雀　すずめ");
+  OS.clear();
 }
 #endif
 

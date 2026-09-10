@@ -57,7 +57,8 @@ if(CLIHEHE_BUILD_TESTS)
 
   if(CLIHEHE_TEST_FMT)
     target_link_libraries(clihehe_tests fmt::fmt)
-    target_compile_definitions(clihehe_Tests PUBLIC NAO_CLIHH_FMT_FORMAT=1 NAO_CLIHH_FMT_PRINT=1)
+    target_compile_definitions(clihehe PUBLIC NAO_CLIHH_FMT_FORMAT=1 NAO_CLIHH_FMT_PRINT=1)
+    target_compile_definitions(clihehe_tests PUBLIC NAO_CLIHH_FMT_FORMAT=1 NAO_CLIHH_FMT_PRINT=1)
   endif()
 
   target_link_libraries(clihehe_tests clihehe::clihehe-header-only)
